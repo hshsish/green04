@@ -1,0 +1,10 @@
+Secrets.xcconfig
+*.xcconfig
+.env
+*.env
+key.json
+DerivedData/
+*.xcuserstate
+*.user
+build/
+.DS_Store
