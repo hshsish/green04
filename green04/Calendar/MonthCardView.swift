@@ -1,10 +1,3 @@
-//
-//  MonthCardView.swift
-//  green04
-//
-//  Created by Karina Kazbekova on 11.04.2026.
-//
-
 import SwiftUI
 
 struct MonthCardView: View {
@@ -14,7 +7,6 @@ struct MonthCardView: View {
     let isCenter: Bool
     let onDaySelected: (Date) -> Void
     
-    // ✅ Константы для производительности
     private let rowsCount = 6
     private let colsCount = 7
     private let cellSize: CGFloat = 44
@@ -34,8 +26,6 @@ struct MonthCardView: View {
         .drawingGroup(opaque: false)
         .navigationBarBackButtonHidden()
     }
-    
-    // MARK: - Extracted Subviews
     
     private var monthTitleView: some View {
         Text(monthTitle)
@@ -74,14 +64,11 @@ struct MonthCardView: View {
         let end = min(start + colsCount, days.count)
         
         HStack(spacing: 2) {
-            // ✅ Дни месяца
             if start < days.count {
                 ForEach(days[start..<end], id: \.id) { day in
                     dayCell(for: day)
                 }
             }
-            
-            // ✅ Пустые ячейки для выравнивания
             emptyCellsView(start: end, end: start + colsCount)
         }
     }
@@ -96,8 +83,6 @@ struct MonthCardView: View {
         }
     }
     
-    
-    // MARK: - Helper: проверка настроения для даты
     private func hasMood(for date: Date) -> Bool {
         let key = "mood_records_v2"
         guard let data = UserDefaults.standard.data(forKey: key) else { return false }
@@ -108,7 +93,6 @@ struct MonthCardView: View {
         do {
             let records = try decoder.decode([String: DailyMoodRecord].self, from: data)
             let dayKey = ISO8601DateFormatter().string(from: Calendar.current.startOfDay(for: date))
-            
             guard let record = records[dayKey] else { return false }
             return record.morning != nil || record.afternoon != nil || record.evening != nil
         } catch {
@@ -116,20 +100,18 @@ struct MonthCardView: View {
         }
     }
 
-    // MARK: - Day Cell Builder
     @ViewBuilder
     private func dayCell(for day: CalendarDay) -> some View {
         DayCellView(
             day: day,
-            isSelected: false,              // ✅ Нет выделения в сетке
-            namespace: nil,                 // ✅ matchedGeometryEffect не используется
-            onDaySelected: onDaySelected,   // ✅ Колбэк выбора дня
-            hasMood: hasMood(for: day.date) // ✅ Вычисляем динамически
+            isSelected: false,
+            hasMood: hasMood(for: day.date),
+            namespace: nil,
+            onDaySelected: onDaySelected
         )
     }
 }
 
-// MARK: - Equatable
 extension MonthCardView: Equatable {
     static func == (lhs: MonthCardView, rhs: MonthCardView) -> Bool {
         lhs.monthTitle == rhs.monthTitle &&

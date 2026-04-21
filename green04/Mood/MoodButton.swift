@@ -1,9 +1,4 @@
-//
-//  MoodButton.swift
-//  green04
-//
-//  Created by Karina Kazbekova on 10.04.2026.
-//
+
 import SwiftUI
 
 struct MoodButton: View {
@@ -15,7 +10,6 @@ struct MoodButton: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: 10) {
-                // 🎭 Эмодзи с эффектом свечения
                 ZStack {
                     if isSelected {
                         Circle()
@@ -30,15 +24,13 @@ struct MoodButton: View {
                         .font(.system(size: 40))
                         .scaleEffect(isSelected ? 1.15 : 1.0)
                 }
-                
-                // 🏷️ Подпись
+  
                 Text(mood.label)
                     .font(.system(size: 13, weight: .medium, design: .rounded))
                     .foregroundColor(isSelected ? .white : .white.opacity(0.85))
             }
             .frame(width: 84, height: 100)
             .background {
-                // 🎨 Фон кнопки
                 RoundedRectangle(cornerRadius: 20)
                     .fill(
                         LinearGradient(
@@ -66,7 +58,6 @@ struct MoodButton: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        // 🎬 Микро-анимации
         .scaleEffect(isSelected ? 1.05 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
     }

@@ -1,12 +1,4 @@
-//
-//  NotificationSettingsView.swift
-//  green04
-//
-//  Created by Karina Kazbekova on 08.04.2026.
-//
 
-
-// 📁 NotificationSettingsView.swift
 import UserNotifications
 import NotificationCenter
 import SwiftUI
@@ -64,7 +56,7 @@ struct NotificationSettingsView: View {
     private func sendTestNotification() {
         let content = UNMutableNotificationContent()
         content.title = "Test"
-        content.body = "This is a test notification! 🔔"
+        content.body = "This is a test notification!"
         content.sound = .default
         
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 2, repeats: false)

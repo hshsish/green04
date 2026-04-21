@@ -1,24 +1,16 @@
-//
-//  PeekableCalendarView.swift
-//  green04
-//
-//  Created by Karina Kazbekova on 05.04.2026.
-//
-
 import SwiftUI
 
 struct PeekableCalendarView: View {
     @ObservedObject var viewModel: CalendarViewModel
     
-    // ✅ Константы
     private let peekOffset: CGFloat = 100
     private let cardScale: CGFloat = 0.92
     private let verticalSpacing: CGFloat = 0.71
     private let currentPalette: [Color] = [.purple, .pink, .yellow, .red]
     
     @State private var currentIndex: Int
-    @State private var selectedDay: Date?      // ✅ Дата для навигации
-    @State private var showDayDetail: Bool = false  // ✅ Флаг открытия экрана
+    @State private var selectedDay: Date?
+    @State private var showDayDetail: Bool = false
     
     init(viewModel: CalendarViewModel) {
         self.viewModel = viewModel
@@ -31,8 +23,6 @@ struct PeekableCalendarView: View {
     }
     
     var body: some View {
-        
-        // ✅ NavigationStack обязателен для работы .navigationDestination
         NavigationStack {
             GeometryReader { geo in
                 contentView(for: geo.size)
@@ -41,14 +31,11 @@ struct PeekableCalendarView: View {
             .navigationDestination(isPresented: $showDayDetail) {
                 if let date = selectedDay {
                     let repo = UserDefaultsMoodRepository()
-                    
-                    // ✅ Читаем ключи из Info.plist — НИКАКИХ пустых строк!
                     let apiKey = (Bundle.main.object(forInfoDictionaryKey: "YandexAPIKey") as? String ?? "")
                         .trimmingCharacters(in: .whitespacesAndNewlines)
                     let folderId = (Bundle.main.object(forInfoDictionaryKey: "YandexFolderID") as? String ?? "")
                         .trimmingCharacters(in: .whitespacesAndNewlines)
                     
-                    // ✅ Теперь передаём реальные значения
                     DayDetailView(
                         selectedDate: date,
                         repository: repo,
@@ -61,8 +48,6 @@ struct PeekableCalendarView: View {
             }
         }
     }
-    
-    // MARK: - Extracted Body
     
     @ViewBuilder
     private func contentView(for size: CGSize) -> some View {
@@ -78,8 +63,6 @@ struct PeekableCalendarView: View {
         .contentShape(Rectangle())
         .gesture(dragGesture(size: size))
     }
-    
-    // MARK: - Background Layer
     
     private var backgroundLayer: some View {
         ZStack {
@@ -119,8 +102,6 @@ struct PeekableCalendarView: View {
         )
     }
     
-    // MARK: - Calendar Cards Layer
-    
     @ViewBuilder
     private func calendarCardsLayer(size: CGSize, cardWidth: CGFloat, cardHeight: CGFloat, step: CGFloat) -> some View {
         let range = visibleRange()
@@ -145,7 +126,7 @@ struct PeekableCalendarView: View {
                 days: days,
                 weekdaySymbols: weekdaySymbols,
                 isCenter: i == currentIndex,
-                onDaySelected: { date in  // ✅ Обработчик выбора дня
+                onDaySelected: { date in
                     selectedDay = date
                     showDayDetail = true
                 }
@@ -162,8 +143,6 @@ struct PeekableCalendarView: View {
     private func zIndex(for index: Int) -> Double {
         index == currentIndex ? 100 : 50 - Double(abs(index - currentIndex))
     }
-    
-    // MARK: - Gesture
     
     private func dragGesture(size: CGSize) -> some Gesture {
         DragGesture()
@@ -186,7 +165,6 @@ struct PeekableCalendarView: View {
         currentIndex = newIndex
     }
     
-    // MARK: - Helper: Weekday Symbols
     private var weekdaySymbols: [String] {
         let calendar = Calendar.current
         let symbols = calendar.shortWeekdaySymbols
@@ -196,16 +174,15 @@ struct PeekableCalendarView: View {
     }
 }
 
-// MARK: - Debug Helper
 extension PeekableCalendarView {
     @MainActor
     private func debugPrintMoodData() async {
         let defaults = UserDefaults.standard
         let storageKey = "mood_records_v2"
         
-        print("\n🔍 === MOOD DATA DEBUG ===")
+        print("\n === MOOD DATA DEBUG ===")
         guard let data = defaults.data(forKey: storageKey) else {
-            print("⚪ Нет данных в UserDefaults")
+            print("Нет данных в UserDefaults")
             return
         }
         let decoder = JSONDecoder()
@@ -213,20 +190,20 @@ extension PeekableCalendarView {
         do {
             let records = try decoder.decode([String: DailyMoodRecord].self, from: data)
             if records.isEmpty {
-                print("⚪ Словарь записей пуст")
+                print("Словарь записей пуст")
             } else {
-                print("📦 Найдено дней: \(records.count)")
+                print("Найдено дней: \(records.count)")
                 let sorted = records.sorted { $0.key < $1.key }
                 for (dateKey, record) in sorted {
                     print("\n📅 \(dateKey):")
                     print("   🌅 Morning: \(record.morning?.rawValue ?? "—") \(record.morning?.emoji ?? "")")
                     print("   ☀️  Afternoon: \(record.afternoon?.rawValue ?? "—") \(record.afternoon?.emoji ?? "")")
                     print("   🌙 Evening: \(record.evening?.rawValue ?? "—") \(record.evening?.emoji ?? "")")
-                    print("   ✅ Заполнено: \(record.filledCount)/3")
+                    print("Заполнено: \(record.filledCount)/3")
                 }
             }
         } catch {
-            print("❌ Ошибка декодирования: \(error)")
+            print("Ошибка декодирования: \(error)")
         }
         print("=== END DEBUG ===\n")
     }

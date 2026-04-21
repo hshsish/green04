@@ -2,9 +2,6 @@
 import SwiftUI
 import Foundation
 
-import Foundation
-import SwiftUI
-
 public struct HourMinute: Hashable {
     public let hour: Int
     public let minute: Int
@@ -39,17 +36,15 @@ public class TimeSlotScheduler: ObservableObject {
     private let catchUpEnabled: Bool
     private let slotWindow: TimeInterval = 30 * 60
     
-    // ✅ 1. Основной init (синхронно вычисляет состояние ДО рендера)
     public init(calendar: Calendar = .current, catchUpEnabled: Bool = true) {
         self.calendar = calendar
         self.repository = UserDefaultsCompletionRepository()
         self.catchUpEnabled = catchUpEnabled
         
-        performSyncCheck() // 🔥 Мгновенная проверка
+        performSyncCheck()
         startMonitoring()
     }
-    
-    // ✅ 2. Init для тестов/DI
+
     public init(calendar: Calendar, repository: MoodCompletionRepository, catchUpEnabled: Bool = true) {
         self.calendar = calendar
         self.repository = repository
@@ -60,8 +55,7 @@ public class TimeSlotScheduler: ObservableObject {
     }
     
     deinit { timer?.invalidate() }
-    
-    // 🚀 Синхронная проверка (работает <1мс, не блокирует UI)
+
     private func performSyncCheck() {
         let now = Date()
         let today = calendar.startOfDay(for: now)
@@ -88,8 +82,7 @@ public class TimeSlotScheduler: ObservableObject {
                 missedQueue.append(current)
             }
         }
-        
-        // Сразу применяем состояние (до вызова body)
+
         if !missedQueue.isEmpty {
             pendingMissedSlots = missedQueue
             activeSlot = missedQueue.first
@@ -99,7 +92,6 @@ public class TimeSlotScheduler: ObservableObject {
     }
     
     private func startMonitoring() {
-        // Асинхронное уточнение через 0.2 сек
         Task { [weak self] in
             try? await Task.sleep(nanoseconds: 200_000_000)
             await self?.checkSlots()

@@ -6,7 +6,7 @@ struct MoodRingView: View {
     let activeSlot: TimeSlot
     let isCatchUpMode: Bool
     let scheduler: TimeSlotScheduler
-    let onAllCompleted: () -> Void  // ✅ Новый колбэк: "все слоты заполнены, закрой меня"
+    let onAllCompleted: () -> Void
     
     private let backgroundPalette: [Color] = [.purple, .pink, .yellow, .red]
     
@@ -14,7 +14,7 @@ struct MoodRingView: View {
          activeSlot: TimeSlot,
          isCatchUpMode: Bool,
          scheduler: TimeSlotScheduler,
-         onAllCompleted: @escaping () -> Void) {  // ✅ Добавляем параметр
+         onAllCompleted: @escaping () -> Void) {
         _viewModel = ObservedObject(wrappedValue: viewModel)
         self.activeSlot = activeSlot
         self.isCatchUpMode = isCatchUpMode
@@ -36,7 +36,6 @@ struct MoodRingView: View {
         }
     }
     
-    // MARK: - Background
     private var backgroundLayer: some View {
         ZStack {
             Color.black
@@ -65,7 +64,6 @@ struct MoodRingView: View {
         }
     }
     
-    // MARK: - Content
     private var contentLayer: some View {
         VStack(spacing: 24) {
             Spacer()
@@ -113,7 +111,6 @@ struct MoodRingView: View {
         .padding(.horizontal, 8)
     }
     
-    // MARK: - Actions
     private func handleMoodSelection(_ mood: MoodType) {
         viewModel.selectMood(mood)
         Task {
@@ -123,26 +120,19 @@ struct MoodRingView: View {
     }
     
     private func handleCompletion() async {
-        // 1. Сохраняем настроение
         if let mood = viewModel.selectedMood {
             await viewModel.saveMood(mood, for: activeSlot.type)
         }
         
-        // 2. Сбрасываем выбор
         viewModel.resetSelection()
         
-        // 3. Запоминаем, был ли это последний слот ДО обновления очереди
         let wasLastSlot = scheduler.pendingMissedSlots.count == 1
         
-        // 4. Отмечаем слот как завершённый (это обновит очередь)
         await scheduler.markCompleted(activeSlot.type)
         
-        // 5. Haptic feedback
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         
-        // 6. ✅ Если это был последний слот — явно закрываем оверлей
         if wasLastSlot {
-            // Небольшая задержка для анимации подтверждения
             try? await Task.sleep(nanoseconds: 600_000_000)
             await MainActor.run {
                 onAllCompleted()

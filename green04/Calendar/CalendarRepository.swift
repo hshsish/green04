@@ -1,13 +1,4 @@
 
-
-//
-//  CalendarRepository.swift
-//  green03
-//
-//  Created by Karina Kazbekova on 05.04.2026.
-//
-
-
 import Foundation
 
 final class CalendarRepository: CalendarRepositoryProtocol {

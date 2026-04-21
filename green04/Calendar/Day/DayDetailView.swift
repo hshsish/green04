@@ -1,9 +1,3 @@
-//
-//  DayDetailView.swift
-//  green04
-//
-//  Created by Karina Kazbekova on 11.04.2026.
-//
 
 import SwiftUI
 
@@ -40,7 +34,6 @@ struct DayDetailView: View {
         .navigationBarBackButtonHidden()
     }
     
-    // MARK: - Background Layer
     private var backgroundLayer: some View {
         ZStack {
             Color.black
@@ -69,13 +62,11 @@ struct DayDetailView: View {
         }
     }
     
-    // MARK: - Content Overlay
     private var contentOverlay: some View {
         ScrollView {
             VStack(spacing: 24) {
                 dateHeader
                 
-                // ✅ ПОКАЗЫВАЕМ СОВЕТ, если есть хоть одно настроение
                 if (viewModel.record?.filledCount ?? 0) > 0 {
                     aiAdviceCard
                 }
@@ -101,7 +92,6 @@ struct DayDetailView: View {
         .animation(.easeInOut(duration: 0.25), value: viewModel.isLoading)
     }
     
-    // MARK: - AI Advice Card (НОВОЕ)
     private var aiAdviceCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
@@ -148,7 +138,6 @@ struct DayDetailView: View {
         .navigationBarBackButtonHidden()
     }
     
-    // MARK: - Header
     private var dateHeader: some View {
         VStack(spacing: 12) {
             Text(selectedDate, format: .dateTime.weekday(.wide))
@@ -174,8 +163,7 @@ struct DayDetailView: View {
         }
         .padding(.bottom, 8)
     }
-    
-    // MARK: - Mood Slots
+
     private var moodSlotsSection: some View {
         VStack(spacing: 14) {
             ForEach(MoodTimeSlot.allCases, id: \.self) { slot in
@@ -187,8 +175,7 @@ struct DayDetailView: View {
             }
         }
     }
-    
-    // MARK: - Helpers
+
     private func slotTime(for slot: MoodTimeSlot) -> String {
         switch slot {
         case .morning: return "10:00"
@@ -198,7 +185,6 @@ struct DayDetailView: View {
     }
 }
 
-// MARK: - Mood Slot Row Component (без изменений)
 private struct MoodSlotRow: View {
     let slot: MoodTimeSlot
     let mood: MoodType?
@@ -263,72 +249,3 @@ private struct MoodSlotRow: View {
         }
     }
 }
-
-// MARK: - ViewModel (ОБНОВЛЁН)
-@MainActor
-class DayDetailViewModel: ObservableObject {
-    @Published var record: DailyMoodRecord?
-    @Published var isLoading: Bool = true
-    @Published var aiAdvice: String?        // ✅ НОВОЕ
-    @Published var isAdviceLoading: Bool = false // ✅ НОВОЕ
-    
-    private let repository: MoodRepository
-    private let selectedDate: Date
-    private let aiClient: YandexGPTClient   // ✅ НОВОЕ
-    
-    init(selectedDate: Date, repository: MoodRepository, aiClient: YandexGPTClient) {
-        self.selectedDate = selectedDate
-        self.repository = repository
-        self.aiClient = aiClient
-        Task { await loadData() }
-    }
-    
-    private func loadData() async {
-        isLoading = true
-        do {
-            record = try await repository.getRecord(for: selectedDate)
-            // ✅ Генерируем совет, если есть данные
-            if (record?.filledCount ?? 0) > 0 {
-                await generateAdvice()
-            }
-        } catch {
-            print("❌ Failed to load record: \(error)")
-        }
-        isLoading = false
-    }
-    
-    // ✅ НОВАЯ ФУНКЦИЯ: Запрос к ИИ
-    private func generateAdvice() async {
-        guard let record = record else { return }
-        isAdviceLoading = true
-        
-        do {
-            aiAdvice = try await aiClient.generateWellnessAdvice(
-                morning: record.morning?.emoji,
-                afternoon: record.afternoon?.emoji,
-                evening: record.evening?.emoji,
-                date: selectedDate
-            )
-        } catch let urlError as URLError {
-            // 🌐 Сетевые ошибки
-            aiAdvice = "🌐 Проверьте соединение с интернетом"
-            print("❌ Network Error: \(urlError.localizedDescription) (Code: \(urlError.code.rawValue))")
-            
-        } catch let decodingError as DecodingError {
-            // 📦 Ошибка парсинга JSON
-            aiAdvice = "⚠️ Не удалось обработать ответ ИИ"
-            print("❌ Decoding Error: \(decodingError)")
-            
-        } catch {
-            // 💥 Остальные ошибки
-            aiAdvice = "✨ Берегите себя сегодня. Маленькие шаги ведут к большим переменам."
-            print("❌ AI Error: \(error)")
-            print("❌ Error type: \(type(of: error))")
-        }
-        isAdviceLoading = false
-    }
-    
-    func mood(for slot: MoodTimeSlot) -> MoodType? { record?[slot] }
-    var filledCount: Int { record?.filledCount ?? 0 }
-}
-

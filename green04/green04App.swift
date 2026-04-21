@@ -1,10 +1,3 @@
-//
-//  green04App.swift
-//  green04
-//
-//  Created by Karina Kazbekova on 13.04.2026.
-//
-
 import SwiftUI
 
 @main
@@ -14,25 +7,19 @@ struct green04App: App {
     @State private var moodRingVM: MoodRingViewModel?
     @State private var isLoading = true
     
-    // ✅ ОДИН раз объявляем свойство — без инициализации
     private let aiClient: YandexGPTClient
     
-    // ✅ Инициализируем ВСЁ в init()
     init() {
-        // 🔍 Читаем и чистим ключи
         let apiKey = (Bundle.main.object(forInfoDictionaryKey: "YandexAPIKey") as? String ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let folderId = (Bundle.main.object(forInfoDictionaryKey: "YandexFolderID") as? String ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // 🔍 Отладка
         print("🔑 [init] API Key: '\(apiKey)' (count: \(apiKey.count))")
         print("📁 [init] Folder ID: '\(folderId)' (count: \(folderId.count))")
         
-        // ✅ Инициализируем aiClient — ОДИН РАЗ
         self.aiClient = YandexGPTClient(apiKey: apiKey, folderId: folderId)
         
-        // ✅ Остальные зависимости
         let calendarRepo = CalendarRepository()
         let calendarUseCase = GetDaysForMonthUseCase(repository: calendarRepo)
         _calendarVM = StateObject(wrappedValue: CalendarViewModel(useCase: calendarUseCase))
@@ -59,7 +46,6 @@ struct green04App: App {
         }
     }
     
-    // MARK: - Main Content
     @ViewBuilder
     private var mainContentView: some View {
         ZStack {
@@ -73,7 +59,6 @@ struct green04App: App {
         }
     }
     
-    // MARK: - Overlay
     @ViewBuilder
     private func moodRingOverlay(for slot: TimeSlot) -> some View {
         if let vm = moodRingVM {
@@ -96,7 +81,6 @@ struct green04App: App {
     
     @MainActor
     private func prepareAppForLaunch() {
-        // 🔍 Тест: создаём клиент вручную (для отладки)
         #if DEBUG
         let testApiKey = ""
         let testFolderId = ""

@@ -1,17 +1,7 @@
-//
-//  MoodModels.swift
-//  green04
-//
-//  Created by Karina Kazbekova on 11.04.2026.
-//
 
 import Foundation
 import SwiftUI
 
-// MARK: - 🎨 Color Extension
-
-
-// MARK: - 😊 MoodType
 public enum MoodType: String, CaseIterable, Identifiable, Codable {
     case excellent = "excellent"
     case good = "good"
@@ -46,7 +36,6 @@ public enum MoodType: String, CaseIterable, Identifiable, Codable {
     public var glowColor: Color { accentColor.opacity(0.6) }
 }
 
-// MARK: - 🕐 MoodTimeSlot
 public enum MoodTimeSlot: String, CaseIterable, Identifiable, Codable {
     case morning = "morning"
     case afternoon = "afternoon"
@@ -73,9 +62,8 @@ public enum MoodTimeSlot: String, CaseIterable, Identifiable, Codable {
     }
 }
 
-// MARK: - 📦 DailyMoodRecord
 public struct DailyMoodRecord: Codable, Identifiable, Hashable {
-    public let date: Date  // start of day (00:00)
+    public let date: Date
     public var morning: MoodType?
     public var afternoon: MoodType?
     public var evening: MoodType?
@@ -86,7 +74,6 @@ public struct DailyMoodRecord: Codable, Identifiable, Hashable {
         self.date = Calendar.current.startOfDay(for: date)
     }
     
-    // ✅ Удобный доступ по слоту: record[.morning] = .good
     public subscript(slot: MoodTimeSlot) -> MoodType? {
         get {
             switch slot {
@@ -113,18 +100,14 @@ public struct DailyMoodRecord: Codable, Identifiable, Hashable {
     }
 }
 
-// MARK: - 🗄️ Repository Protocol (Domain Layer)
 public protocol MoodRepository {
-    // Асинхронные методы для сохранения/чтения
     func saveMood(_ mood: MoodType, for slot: MoodTimeSlot, date: Date) async throws
     func getMood(for slot: MoodTimeSlot, date: Date) async throws -> MoodType?
     func getRecord(for date: Date) async throws -> DailyMoodRecord?
     
-    // ✅ Синхронный метод для мгновенной проверки при запуске (без чёрного экрана)
     func isCompletedSync(_ slot: MoodTimeSlot, for date: Date) -> Bool
 }
 
-// MARK: - ⚡ Use Case (Domain Layer)
 public struct SelectMoodUseCase {
     private let repository: MoodRepository
     

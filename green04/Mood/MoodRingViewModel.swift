@@ -3,20 +3,16 @@ import Combine
 
 @MainActor
 class MoodRingViewModel: ObservableObject {
-    // MARK: - Published State
     @Published var selectedMood: MoodType?
     @Published var isAnimating: Bool = false
     @Published var showConfirmation: Bool = false
     
-    // MARK: - Dependencies
     private let selectMoodUseCase: SelectMoodUseCase
     private let moodRepository: MoodRepository
     private var cancellables = Set<AnyCancellable>()
     
-    // MARK: - Scheduler reference (weak to avoid retain cycle)
     weak var scheduler: TimeSlotScheduler?
     
-    // MARK: - Haptics
     private let impactLight = UIImpactFeedbackGenerator(style: .light)
     private let successNotification = UINotificationFeedbackGenerator()
     
@@ -31,7 +27,6 @@ class MoodRingViewModel: ObservableObject {
         successNotification.prepare()
     }
     
-    // MARK: - Actions
     func selectMood(_ mood: MoodType) {
         impactLight.impactOccurred()
         
@@ -47,7 +42,6 @@ class MoodRingViewModel: ObservableObject {
             successNotification.notificationOccurred(.success)
             showConfirmation = true
             
-            // ✅ Было: 1.5 сек → Стало: 0.3 сек
             try? await Task.sleep(nanoseconds: 300_000_000)
             
             await MainActor.run {
@@ -57,7 +51,7 @@ class MoodRingViewModel: ObservableObject {
                 }
             }
         } catch {
-            print("❌ Failed to save mood: \(error)")
+            print("Failed to save mood: \(error)")
         }
     }
     

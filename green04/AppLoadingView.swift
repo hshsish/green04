@@ -6,7 +6,6 @@
 import SwiftUI
 
 struct AppLoadingView: View {
-    // ✅ СТАРТ С 1.0 — точки видны сразу!
     @State private var dotStates: [Double] = [1.0, 1.0, 1.0]
     @State private var textOpacity: Double = 0
     @State private var imageScale: CGFloat = 1.05
@@ -25,7 +24,7 @@ struct AppLoadingView: View {
                 .scaleEffect(imageScale)
                 .ignoresSafeArea()
                 .animation(.easeOut(duration: 0.6), value: imageScale)
-                .compositingGroup() // ✅ Кэшируем фон для производительности
+                .compositingGroup()
             
             VStack(spacing: 0) {
                 Spacer()
@@ -35,7 +34,6 @@ struct AppLoadingView: View {
                     .foregroundColor(.white.opacity(0.9))
                     .padding(.bottom, 8)
                 
-                // ✨ Точки загрузки
                 HStack(spacing: 12) {
                     ForEach(0..<dotCount, id: \.self) { index in
                         Circle()
@@ -51,17 +49,12 @@ struct AppLoadingView: View {
             .padding(.horizontal, 20)
         }
         .onAppear {
-            // Анимация фона
             withAnimation(.easeOut(duration: 0.6)) {
                 imageScale = 1.0
             }
-            
-            // ✅ Точки — запускаем СРАЗУ (они уже видимые, поэтому не пропадут)
             for index in 0..<dotCount {
                 animateDot(at: index)
             }
-            
-            // Текст — с микро-задержкой для иерархии
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 withAnimation(.easeIn(duration: 0.3)) {
                     textOpacity = 1
@@ -77,7 +70,6 @@ struct AppLoadingView: View {
             .repeatForever(autoreverses: true)
             .delay(baseDelay)
         ) {
-            // ✅ Пульсация: 1.0 ↔ 0.7 (а не появление из 0!)
             dotStates[index] = 0.7
         }
     }
